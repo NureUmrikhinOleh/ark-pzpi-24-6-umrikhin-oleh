@@ -146,7 +146,7 @@
 ДОДАТОК В
 Програмний код
 В.1 Фрагмент коду модульного файлу item.ts
-GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/tree/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/Pract1/pzpi-24-6-umrikhin-oleh-pract1/models/item.ts
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/models/item.ts
 
 1  export interface Item {
 2    itemId: string;
@@ -155,7 +155,7 @@ GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6
 5  }
 
 В.2 Фрагмент коду модульного файлу order.ts
-GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/tree/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/Pract1/pzpi-24-6-umrikhin-oleh-pract1/models/order.ts
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/models/order.ts
 
 1  import { Item } from './item';
 2  
@@ -168,13 +168,13 @@ GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6
 9  }
 
 В.3 Фрагмент коду barrel-файлу index.ts
-GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/tree/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/Pract1/pzpi-24-6-umrikhin-oleh-pract1/models/index.ts
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/models/index.ts
 
 1  export * from './item';
 2  export * from './order';
 
 В.4 Фрагмент коду головного файлу app.ts
-GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/tree/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/Pract1/pzpi-24-6-umrikhin-oleh-pract1/app.ts
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/app.ts
 
  1  /* Без barrel файлу було б
  2  import { Item } from './models/item';
@@ -204,7 +204,7 @@ GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6
 26  };
 
 В.5 Фрагмент файлу конфігурації .prettierrc
-GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/tree/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/Pract1/pzpi-24-6-umrikhin-oleh-pract1/.prettierrc
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/.prettierrc
 
 1  {
 2    "semi": true,
@@ -215,7 +215,7 @@ GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6
 7  }
 
 В.6 Приклад форматування масиву інструментом Prettier
-GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/tree/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/Pract1/pzpi-24-6-umrikhin-oleh-pract1/testPrettier.ts
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/testPrettier.ts
 
 
  1  //Поганий код
@@ -234,7 +234,7 @@ GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6
 13  ];
 
 В.7 Приклад програмного коду до застосування правил оформлення
-GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/tree/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/Pract1/pzpi-24-6-umrikhin-oleh-pract1/examplesOfCode.ts
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/examplesOfCode.ts
 
  1  // Поганий код
  2  interface IItem {
@@ -253,7 +253,7 @@ GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6
 14  }
 
 В.8 Приклад програмного коду після застосування правил оформлення
-GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/tree/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/Pract1/pzpi-24-6-umrikhin-oleh-pract1/examplesOfCode.ts
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/examplesOfCode.ts
 
 16  // Гарний код
 17  interface Item {
@@ -275,7 +275,7 @@ GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6
 33  }
 
 В.9 Приклад TSDoc-документування функції у файлі commentsAndDocumentation.ts 
-GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/tree/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/Pract1/pzpi-24-6-umrikhin-oleh-pract1/commentsAndDocumentation.ts
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract1/pzpi-24-6-umrikhin-oleh-pract1/commentsAndDocumentation.ts
 
  1  interface Item {
  2    title: string;
