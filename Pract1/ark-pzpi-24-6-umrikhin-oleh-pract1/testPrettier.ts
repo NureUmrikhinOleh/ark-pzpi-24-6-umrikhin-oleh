@@ -1,5 +1,13 @@
 //Поганий код
-const badItemsArray = ["apple", "banana", "orange", "book", "pencil", "chair", "table"];
+const badItemsArray = [
+  'apple',
+  'banana',
+  'orange',
+  'book',
+  'pencil',
+  'chair',
+  'table',
+];
 
 //Гарний код
 const goodItemsArray = [
