@@ -1,1 +1,309 @@
+﻿Харківський національний університет радіоелектроніки
+Факультет комп’ютерних наук
+Кафедра програмної інженерії
+
+
+
+
+
+ЗВІТ
+до практичного завдання №2
+з дисципліни «Аналіз та рефакторинг коду»
+на тему: «Методи рефакторингу коду програмного забезпечення:
+Replace Temp with Query, Move Method, Pull Up Field»
+
+
+
+
+Виконав
+ст. гр. ПЗПІ-24-6
+Умріхін Олег Володимирович
+
+Перевірив
+ст. викладач кафедри ПІ
+Сокорчук Ігор Петрович
+
+
+
+
+
+
+Харків 2026
+
+1 ІСТОРІЯ ЗМІН
+№ДатаВерсія звітуОпис змін та виправлень108.11.20260.1Створено титульну сторінку та розділи «Історія змін», «Використані джерела».209.11.20260.2Створено розділи «Завдання», «Опис виконаної роботи», «Висновки» та додатки Б та В310.11.20260.3Створено додаток А
+
+
+2 ЗАВДАННЯ
+     Обрати три методи рефакторингу коду з книги М. Фаулера «Refactoring: Improving the Design of Existing Code», які не повторюються в межах групи, та продемонструвати їх на прикладах власного програмного коду. Для кожного методу потрібно описати проблему, яку він вирішує, навести код до і після рефакторингу та пояснити, що змінилося на краще.
+     Для захисту практичного завдання підготувати доповідь на тему «Методи рефакторингу коду програмного забезпечення: Replace Temp with Query, Move Method, Pull Up Field» та оформити:
+– Презентацію (12 слайдів українською мовою; вигляд слайда: заголовок слайда, 6..8 рядків тексту або рисунок, великий номер слайда праворуч унизу слайда).
+– Відеозапис доповіді (7..9 хв українською мовою) із завантаженням на YouTube, відкритим доступом за посиланням та створенням хронологічного опису відео із 6..10 пунктів.
+– Звіт українською мовою, експортований у форматах PDF (для завантаження на платформу dl.nure.ua) та TXT з кодуванням UTF-8 (для завантаження у репозиторій на GitHub).
+
+
+3 ОПИС ВИКОНАНОЇ РОБОТИ
+     Під час виконання практичного завдання №2 на тему «Методи рефакторингу коду програмного забезпечення: Replace Temp with Query, Move Method, Pull Up Field» було обрано мою лабораторну роботу з минулого семестру — серверний Web API для бронювання номерів у готелях. Він написаний на C# з використанням ASP.NET Core та Entity Framework Core, дані зберігаються в базі SQLite. Проєкт невеликий: контролер бронювань BookingsController, клас DbSeeder для заповнення бази тестовими даними та п’ять моделей (Hotel, Room, Client, Service, Booking).
+     Рефакторинг — це зміна внутрішньої структури програми, після якої код стає зрозумілішим і його простіше змінювати, але поведінка програми залишається такою ж. Методи обиралися з каталогу книги М. Фаулера [1] так, щоб вони не повторювались у групі і щоб вони були актуальними в власній роботі. Код до та після рефакторингу завантажено в репозиторій на GitHub у папки BeforeRefactoring та AfterRefactoring, а потрібні фрагменти наведено в Додатку В.
+     3.1 Replace Temp with Query
+     У методі CreateBooking контролера BookingsController перед створенням бронювання перевіряється, чи не зайнята кімната на вибрані дати. Результат запиту до бази записувався в тимчасову змінну isOccupied, яка використовувалась лише один раз — в умові if (див. Додаток В.1). Сама по собі змінна нічого не ламає, але через неї перевірка виявляється «прив’язаною» до одного методу. Якщо таку саму перевірку знадобиться зробити ще десь, наприклад при зміні дат бронювання, запит доведеться копіювати.
+     Фаулер пропонує в такому випадку винести вираз в окремий метод, а звернення до змінної замінити викликом цього методу [1, с. 97]. Так і було зроблено: запит перенесено в приватний метод IsRoomOccupied, змінну прибрано, і тепер умова має вигляд if (await IsRoomOccupied(booking)) (див. Додаток В.2). Метод повертає Task<bool>, а await залишився в місці виклику, тому асинхронність початкового коду збереглася.
+     3.2 Move Method
+     У класі DbSeeder вартість бронювання рахувалася прямо на місці, і формула була написана двічі — окремо для кожного з двох бронювань (див. Додаток В.3). При цьому формула використовує тільки дані бронювання: дати заїзду та виїзду і вартість послуг. Виходить, що код лежить в одному класі, а працює з даними іншого. У книзі такий випадок названо «заздрістю до чужих даних» (Feature Envy) і рекомендовано перенести метод у клас, дані якого він використовує [1, с. 115].
+     Розрахунок було перенесено в метод CalculateTotal класу Booking (див. Додаток В.4). Ціна за ніч передається параметром, а вартість послуг метод бере зі списку Services самого бронювання. У DbSeeder замість формул тепер стоять виклики booking1.CalculateTotal() та booking2.CalculateTotal() (див. Додаток В.5).
+     Під час перенесення довелося поміняти порядок двох рядків. Раніше ціна послуги дописувалася у формулу вручну, а тепер береться зі списку, тому послугу треба додати в бронювання ще до розрахунку.
+     Тепер формула записана один раз, а дані й поведінка, яка з ними працює, знаходяться в одному класі. Ціну послуг вже неможливо «забути» додати, а сам метод можна використати і в контролері, де при створенні бронювання сума поки що взагалі не рахується.
+     3.3 Pull Up Field
+     У всіх п’яти моделях (Hotel, Room, Client, Service, Booking) окремо оголошено однакову властивість public int Id { get; set; } (див. Додаток В.6). Це звичайне дублювання: якщо, наприклад, знадобиться змінити тип ключа на Guid, правити доведеться п’ять файлів.
+     Метод Pull Up Field полягає в тому, що однакове поле з підкласів переносять у спільний батьківський клас [1, с. 259]. Батьківського класу в моделей не було, тому спочатку було створено абстрактний клас Entity, а вже потім у нього перенесено Id (див. Додаток В.7). Усі моделі тепер наслідуються від Entity, а рядок з Id з них видалено (приклад для класу Hotel наведено в Додатку В.8). Абстрактним зроблено саме клас, бо окремий об’єкт «сутність» без жодних даних не має сенсу. Властивість Id при цьому звичайна і зберігається в кожному об’єкті.
+     Код, який звертається до Id (наприклад, booking.Id у контролері), змінювати не довелося, бо властивість успадковується. Клас Entity не зареєстрований у контексті бази даних як окрема таблиця, тому Entity Framework, як і раніше, додає стовпець Id до таблиці кожної моделі.
+     3.4 Інструменти для рефакторингу
+     Лабораторна робота виконувалась у VS Code з розширенням для C#. Доступні рефакторинги в ньому відкриваються через значок лампочки або комбінацію Ctrl+. (Quick Fix), окремо є команда Refactor (Ctrl+Shift+R) та перейменування F2, яке змінює назву в усіх файлах проєкту [2]. Для C# серед готових дій є, наприклад, Inline temporary variable, Introduce local variable та Move type to matching file [3].
+     Inline temporary variable фактично виконує лише один крок Replace Temp with Query: якщо поставити курсор на змінну isOccupied, VS Code пропонує прибрати її і підставити вираз прямо в умову. Окремий метод-запит при цьому не створюється, тому IsRoomOccupied було виділено вручну. Move Method і Pull Up Field VS Code автоматично не виконує, тож їх теж було зроблено вручну, а після змін проєкт перевірявся командою dotnet build.
+
+
+4 ВИСНОВКИ
+     У результаті виконання практичного завдання на власному коді було застосовано три методи рефакторингу з книги М. Фаулера.
+– За допомогою Replace Temp with Query тимчасову змінну isOccupied замінено методом-запитом IsRoomOccupied, тепер перевірку зайнятості кімнати можна використовувати повторно.
+– Методом Move Method розрахунок вартості бронювання перенесено з DbSeeder у клас Booking, і формула тепер записана в одному місці замість двох.
+– Pull Up Field прибрав дублювання властивості Id у п’яти моделях завдяки новому базовому класу Entity.
+– На прикладі з порядком додавання послуги стало видно, що навіть простий рефакторинг може випадково змінити поведінку програми, тому після кожної зміни результат треба перевіряти.
+– Отримано навички роботи з інструментами рефакторингу у VS Code і розуміння того, що середовище може зробити автоматично, а що доводиться робити вручну.
+
+
+
+5 ВИКОРИСТАНІ ДЖЕРЕЛА
+     1. Fowler M. Refactoring: Improving the Design of Existing Code. Reading: Addison-Wesley, 1999. 431 p.
+     2. Refactoring. Visual Studio Code Documentation. URL: https://code.visualstudio.com/docs/editing/refactoring (дата звернення: 08.11.2026).
+     3. C# Quick Actions and Refactorings. Visual Studio Code Documentation. URL: https://code.visualstudio.com/docs/csharp/refactoring (дата звернення: 08.11.2026).
+
+
+ДОДАТОК А
+Відеозапис
+     Відеозапис доповіді: https://youtu.be/LKZRuwtSkKQ
+     Хронологічний опис: 
+– 00:00 — Вступ і тема доповіді 
+– 00:16 — Поняття рефакторингу 
+– 01:42 — Обраний проєкт і методи, огляд проєкту у VS Code 
+– 03:20 — Replace Temp with Query 
+– 05:12 — Move Method 
+– 07:10 — Pull Up Field 
+– 08:25 — Інструменти для рефакторингу у VS Code 
+– 09:58 — Висновки 
+– 11:11 — Використані джерела
+
+
+
+ДОДАТОК Б
+Слайди презентації
+Рисунок Б.1 — Титульний слайд презентації
+
+Рисунок Б.2 — Поняття рефакторингу
+
+Рисунок Б.3 — Обраний проєкт і методи
+
+Рисунок Б.4 — Replace Temp with Query: проблема
+
+Рисунок Б.5 — Replace Temp with Query: після рефакторингу
+
+Рисунок Б.6 — Move Method: проблема
+
+Рисунок Б.7 — Move Method: після рефакторингу
+
+Рисунок Б.8 — Pull Up Field: проблема
+
+Рисунок Б.9 — Pull Up Field: після рефакторингу
+
+Рисунок Б.10 — Інструменти для рефакторингу
+
+Рисунок Б.11 — Висновки
+
+Рисунок Б.12 — Використані джерела
+
+
+
+ДОДАТОК В
+Програмний код
+В.1 Фрагмент методу CreateBooking до рефакторингу файлу BookingsController.cs
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract2/ark-pzpi-24-6-umrikhin-oleh-pract2/BeforeRefactoring/BookingsController.cs
+
+44        [HttpPost]
+45        public async Task<ActionResult<Booking>> CreateBooking([FromBody] 
+          Booking booking)
+46        {
+47          if (booking.CheckInDate >= booking.CheckOutDate)
+48          {
+49            return BadRequest("Некоректні дати бронювання.");
+50          }
+51        
+52          var isOccupied = await _context.Bookings
+53              .AnyAsync(b => b.RoomId == booking.RoomId &&
+54                              b.CheckInDate < booking.CheckOutDate &&
+55                              b.CheckOutDate > booking.CheckInDate);
+56        
+57          if (isOccupied)
+58          {
+59            return BadRequest("Ця кімната вже заброньована на вибрані дати.");
+60          }
+
+В.2 Метод CreateBooking та метод-запит IsRoomOccupied після рефакторингу в файлі BookingsController.cs
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract2/ark-pzpi-24-6-umrikhin-oleh-pract2/AfterRefactoring/BookingsController.cs
+
+44        [HttpPost]
+45        public async Task<ActionResult<Booking>> CreateBooking([FromBody] 
+          Booking booking)
+46        {
+47          if (booking.CheckInDate >= booking.CheckOutDate)
+48          {
+49            return BadRequest("Некоректні дати бронювання.");
+50          }
+51        
+52          if (await IsRoomOccupied(booking)) // замість змінної isOccupied
+53          {
+54            return BadRequest("Ця кімната вже заброньована на вибрані дати.");
+55          }
+56        
+57          _context.Bookings.Add(booking);
+58          await _context.SaveChangesAsync();
+59        
+60          return CreatedAtAction(nameof(GetBookingById), new { id = booking.Id 
+            }, booking);
+61        }
+62        
+63        // метод-запит замість тимчасової змінної
+64        private Task<bool> IsRoomOccupied(Booking booking)
+65        {
+66          return _context.Bookings.AnyAsync(b =>
+67              b.RoomId == booking.RoomId &&
+68              b.CheckInDate < booking.CheckOutDate &&
+69              b.CheckOutDate > booking.CheckInDate);
+70        }
+
+В.3 Розрахунок вартості бронювань до рефакторингу в файлі DbSeeder.cs
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract2/ark-pzpi-24-6-umrikhin-oleh-pract2/BeforeRefactoring/DbSeeder.cs
+
+41        booking1.TotalAmount = (decimal)(booking1.CheckOutDate - 
+              booking1.CheckInDate).TotalDays * room1.PricePerNight + 
+              service1.Price;
+42        booking1.Services.Add(service1);
+43      
+44        var booking2 = new Booking
+45        {
+46          Client = client2,
+47          Room = room3,
+48          CheckInDate = new DateTime(2026, 5, 30),
+49          CheckOutDate = new DateTime(2026, 6, 1),
+50        };
+51        booking2.TotalAmount = (decimal)(booking2.CheckOutDate - 
+              booking2.CheckInDate).TotalDays * room3.PricePerNight;
+
+В.4 Клас Booking з перенесеним методом CalculateTotal в Booking.cs
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract2/ark-pzpi-24-6-umrikhin-oleh-pract2/AfterRefactoring/Models/Booking.cs
+
+ 1  using System;
+ 2  using System.Collections.Generic;
+ 3  using System.ComponentModel.DataAnnotations;
+ 4
+ 5  namespace HotelBookingApp.Models
+ 6  {
+ 7      public class Booking : Entity
+ 8      {
+ 9          public int ClientId { get; set; }
+10          public int RoomId { get; set; }
+11
+12          public DateTime CheckInDate { get; set; }
+13          public DateTime CheckOutDate { get; set; }
+14          public decimal TotalAmount { get; set; }
+15
+16          public Client? Client { get; set; }
+17          public Room? Room { get; set; }
+18
+19          public List<Service> Services { get; set; } = new List<Service>();
+20
+21          // метод перенесено з DbSeeder
+22          public decimal CalculateTotal(decimal pricePerNight)
+23          {
+24              var nights = (decimal)(CheckOutDate - CheckInDate).TotalDays;
+25              return nights * pricePerNight + Services.Sum(s => s.Price);
+26          }
+27      }
+28  }
+
+В.5 Розрахунок вартості бронювань після рефакторингу в DbSeeder.cs
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract2/ark-pzpi-24-6-umrikhin-oleh-pract2/AfterRefactoring/DbSeeder.cs
+
+41        booking1.Services.Add(service1);
+42        // спочатку додаємо сервіс, бо CalculateTotal рахує суму зі списку
+          Services
+43        booking1.TotalAmount = booking1.CalculateTotal(room1.PricePerNight);
+44      
+45        var booking2 = new Booking
+46        {
+47          Client = client2,
+48          Room = room3,
+49          CheckInDate = new DateTime(2026, 5, 30),
+50          CheckOutDate = new DateTime(2026, 6, 1),
+51        };
+52        // для другого бронювання також використовуємо функцію 
+          CalculateTotal
+53        booking2.TotalAmount = booking2.CalculateTotal(room3.PricePerNight);
+
+В.6 Модель Hotel до рефакторингу в Hotel.cs
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract2/ark-pzpi-24-6-umrikhin-oleh-pract2/BeforeRefactoring/Models/Hotel.cs
+
+ 1  using System;
+ 2  using System.Collections.Generic;
+ 3  using System.ComponentModel.DataAnnotations;
+ 4
+ 5  namespace HotelBookingApp.Models
+ 6  {
+ 7      public class Hotel
+ 8      {
+ 9          public int Id { get; set; }
+10          [Required, MaxLength(100)]
+11          public string Name { get; set; }
+12          [Required, MaxLength(200)]
+13          public string Address { get; set; }
+14          public int Stars { get; set; }
+15
+16          public List<Room> Rooms { get; set; } = new List<Room>();
+17      }
+18  }
+
+
+В.7 Базовий клас Entity в файлі Entity.cs
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract2/ark-pzpi-24-6-umrikhin-oleh-pract2/AfterRefactoring/Models/Entity.cs
+
+1  namespace HotelBookingApp.Models
+2  {
+3      // базовий клас для всіх моделей
+4      public abstract class Entity
+5      {
+6          public int Id { get; set; }
+7      }
+8  }
+
+В.8 Модель Hotel після рефакторингу в Hotel.cs
+GitHub репозиторій: https://github.com/NureUmrikhinOleh/ark-pzpi-24-6-umrikhin-oleh/blob/main/Pract2/ark-pzpi-24-6-umrikhin-oleh-pract2/AfterRefactoring/Models/Hotel.cs
+
+ 1  using System;
+ 2  using System.Collections.Generic;
+ 3  using System.ComponentModel.DataAnnotations;
+ 4
+ 5  namespace HotelBookingApp.Models
+ 6  {
+ 7      public class Hotel : Entity
+ 8      {
+ 9          [Required, MaxLength(100)]
+10          public string Name { get; set; }
+11          [Required, MaxLength(200)]
+12          public string Address { get; set; }
+13          public int Stars { get; set; }
+14
+15          public List<Room> Rooms { get; set; } = new List<Room>();
+16      }
+17  }
+
+2
+
 
